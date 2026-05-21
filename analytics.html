@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analytics — FleetCommand</title>
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="app-layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main-content">
+    <header class="topbar" id="topbar"></header>
+    <div class="page-body">
+
+      <div class="section-header mb-6">
+        <div>
+          <div class="section-title" style="font-size:18px;">Analytics</div>
+          <div class="section-subtitle">KPIs, insights & trends (mock)</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Refresh','Analytics recalculated')">⟳ Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('success','Report','Analytics report generated')">Generate Report</button>
+        </div>
+      </div>
+
+      <div class="analytics-grid" style="margin-bottom:16px;">
+        <div class="chart-container" style="grid-column: span 2;">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Revenue Trend</div>
+              <div class="section-subtitle">Year-to-date (mock)</div>
+            </div>
+          </div>
+          <div style="height:260px;">
+            <canvas id="revTrend"></canvas>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Delivery Success</div>
+              <div class="section-subtitle">On time vs delayed (mock)</div>
+            </div>
+          </div>
+          <div style="height:240px;display:flex;align-items:center;justify-content:center;">
+            <div style="width:220px;">
+              <canvas id="successDonut"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="chart-container">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Operations Metrics</div>
+              <div class="section-subtitle">Last 7 days</div>
+            </div>
+          </div>
+          <div>
+            <div class="metric-row"><div class="metric-label">Avg fuel spend</div><div class="metric-val">$4.2k</div></div>
+            <div class="metric-row"><div class="metric-label">On-time rate</div><div class="metric-val" style="color:var(--accent-green);">87%</div></div>
+            <div class="metric-row"><div class="metric-label">Delayed incidents</div><div class="metric-val" style="color:var(--accent-red);">9</div></div>
+            <div class="metric-row"><div class="metric-label">Avg miles / trip</div><div class="metric-val">312</div></div>
+            <div class="metric-row"><div class="metric-label">Active drivers</div><div class="metric-val">5</div></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Top Drivers</div>
+              <div class="section-subtitle">Based on earnings</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="fc-table">
+              <thead><tr><th>Driver</th><th>Status</th><th>Earnings</th><th>Rating</th></tr></thead>
+              <tbody id="topDrivers"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script src="core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function renderTopDrivers(){
+  const tbody = document.getElementById('topDrivers');
+  const list = [...FC.drivers].sort((a,b)=>b.earnings-a.earnings).slice(0,4);
+  tbody.innerHTML = list.map(d=>`
+    <tr onclick="showToast('info','Driver','Opened ${d.id}')">
+      <td class="td-primary">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="driver-avatar" style="background:${d.color}20;color:${d.color};width:28px;height:28px;font-size:11px;">${d.initials}</div>
+          <div><div style="font-weight:700;font-size:13px;">${d.name}</div><div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">${d.id}</div></div>
+        </div>
+      </td>
+      <td>${getStatusBadge(d.status)}</td>
+      <td class="font-mono" style="color:var(--accent-green);font-weight:800;">${formatCurrency(d.earnings)}</td>
+      <td>${d.rating.toFixed(1)}</td>
+    </tr>
+  `).join('');
+}
+
+function initAnalyticsCharts(){
+  const revCtx = document.getElementById('revTrend').getContext('2d');
+  const gridColor = 'rgba(255,255,255,0.04)';
+  const textColor = '#4a5a7a';
+  const gradient = revCtx.createLinearGradient(0,0,0,220);
+  gradient.addColorStop(0,'rgba(0,210,255,0.25)');
+  gradient.addColorStop(1,'rgba(0,210,255,0)');
+
+  new Chart(revCtx,{
+    type:'line',
+    data:{labels:FC.revenue.labels, datasets:[{label:'Revenue', data:FC.revenue.data, borderColor:'#00d2ff', backgroundColor:gradient, borderWidth:2, fill:true, tension:0.35, pointRadius:3, pointBackgroundColor:'#00d2ff', pointBorderWidth:2, pointBorderColor:'#080c14'}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{color:gridColor}, ticks:{color:textColor, font:{size:10}}}, y:{grid:{color:gridColor}, ticks:{color:textColor, font:{size:10}, callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}}
+  });
+
+  const donutCtx = document.getElementById('successDonut').getContext('2d');
+  new Chart(donutCtx,{
+    type:'doughnut',
+    data:{datasets:[{data:FC.deliverySuccess.data, backgroundColor:['#00e5a0','#ffb830','#ff3b5c'], borderWidth:0, hoverOffset:6}]},
+    options:{responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{legend:{display:false}}}
+  });
+}
+
+initApp('Analytics <span class="topbar-subtitle">— Trends</span>');
+renderTopDrivers();
+setTimeout(initAnalyticsCharts, 50);
+</script>
+</body>
+</html>
+

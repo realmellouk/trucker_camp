@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dispatch — FleetCommand</title>
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="app-layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main-content">
+    <header class="topbar" id="topbar"></header>
+    <div class="page-body">
+
+      <div class="section-header mb-6">
+        <div>
+          <div class="section-title" style="font-size:18px;">Dispatch Board</div>
+          <div class="section-subtitle">Drag cards to reprioritize (mock)</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Refresh','Dispatch updated')">⟳ Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('success','Created','New dispatch task created')">➕ New Task</button>
+        </div>
+      </div>
+
+      <div class="dispatch-columns" id="dispatchCols">
+        <div class="dispatch-col" data-col="pending">
+          <div class="dispatch-col-header"><span>Pending</span><span class="badge badge-pending">{pendingCount}</span></div>
+          <div class="dispatch-col-body" id="col-pending"></div>
+        </div>
+        <div class="dispatch-col" data-col="in_progress">
+          <div class="dispatch-col-header"><span>In Progress</span><span class="badge badge-transit">{inprogCount}</span></div>
+          <div class="dispatch-col-body" id="col-in_progress"></div>
+        </div>
+        <div class="dispatch-col" data-col="delayed">
+          <div class="dispatch-col-header"><span>Delayed</span><span class="badge badge-delayed">{delayedCount}</span></div>
+          <div class="dispatch-col-body" id="col-delayed"></div>
+        </div>
+        <div class="dispatch-col" data-col="completed">
+          <div class="dispatch-col-header"><span>Completed</span><span class="badge badge-delivered">{doneCount}</span></div>
+          <div class="dispatch-col-body" id="col-completed"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script src="core.js"></script>
+<script>
+function getColForDelivery(d){
+  if(d.status==='cancelled') return 'completed';
+  if(d.status==='delayed') return 'delayed';
+  if(d.status==='pending') return 'pending';
+  if(d.status==='transit') return 'in_progress';
+  if(d.status==='delivered') return 'completed';
+  return 'pending';
+}
+
+function renderDispatch(){
+  const cols = ['pending','in_progress','delayed','completed'];
+  cols.forEach(c => document.getElementById('col-'+c).innerHTML='');
+
+  const list = FC.deliveries;
+
+  list.forEach(d=>{
+    const col = getColForDelivery(d);
+    const card = document.createElement('div');
+    card.className = 'dispatch-card priority-medium';
+    card.draggable = true;
+    const pr = d.priority || 'medium';
+    card.classList.remove('priority-high','priority-medium','priority-low');
+    card.classList.add(pr==='high'?'priority-high':pr==='low'?'priority-low':'priority-medium');
+    card.dataset.deliveryId = d.id;
+
+    card.innerHTML = `
+      <div class="dispatch-card-id">${d.id}</div>
+      <div class="dispatch-card-route">${d.origin} → ${d.dest}</div>
+      <div class="dispatch-priority ${pr==='high'?'priority-high':pr==='low'?'priority-low':'priority-medium'}">${pr}</div>
+      <div style="margin-top:8px;font-size:12px;color:var(--text-secondary)">ETA: <span class="font-mono">${d.eta}</span></div>
+    `;
+
+    card.addEventListener('click', ()=> showToast('info','Delivery', d.id+' selected'));
+
+    document.getElementById('col-'+col).appendChild(card);
+  });
+
+  // counts
+  const count = (s)=>FC.deliveries.filter(d=>getColForDelivery(d)===s).length;
+  const set = (id,val)=>{ const el=document.querySelector('[data-col="'+id+'"] .badge'); if(el) el.textContent=val; };
+
+  const pendingCount = count('pending');
+  const inprogCount = count('in_progress');
+  const delayedCount = count('delayed');
+  const doneCount = count('completed');
+
+  const pendingEl = document.querySelector('[data-col="pending"] .badge');
+  const inprogEl = document.querySelector('[data-col="in_progress"] .badge');
+  const delayedEl = document.querySelector('[data-col="delayed"] .badge');
+  const doneEl = document.querySelector('[data-col="completed"] .badge');
+
+  if(pendingEl) pendingEl.textContent=pendingCount;
+  if(inprogEl) inprogEl.textContent=inprogCount;
+  if(delayedEl) delayedEl.textContent=delayedCount;
+  if(doneEl) doneEl.textContent=doneCount;
+}
+
+// Drag & drop (mock)
+function enableDnD(){
+  const bodies = document.querySelectorAll('.dispatch-col-body');
+  bodies.forEach(body=>{
+    body.addEventListener('dragover', e=> e.preventDefault());
+    body.addEventListener('drop', e=>{
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      const card = document.querySelector('.dispatch-card[data-delivery-id="'+id+'"]');
+      if(card) body.appendChild(card);
+      showToast('success','Dispatch','Moved '+id+' to new lane');
+    });
+  });
+
+  document.querySelectorAll('.dispatch-card').forEach(card=>{
+    card.addEventListener('dragstart', e=>{
+      e.dataTransfer.setData('text/plain', card.dataset.deliveryId);
+    });
+  });
+}
+
+initApp('Dispatch <span class="topbar-subtitle">— Dispatch Board</span>');
+renderDispatch();
+enableDnD();
+setTimeout(enableDnD, 50);
+</script>
+</body>
+</html>
+

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Messages — FleetCommand</title>
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="app-layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main-content">
+    <header class="topbar" id="topbar"></header>
+    <div class="page-body">
+
+      <div class="chat-layout">
+        <div class="chat-sidebar">
+          <div class="chat-sidebar-header">Driver Conversations</div>
+          <div id="chatList"></div>
+        </div>
+
+        <div class="chat-main">
+          <div class="chat-header">
+            <div>
+              <div class="section-title" id="chatTitle" style="font-size:16px;">Select a driver</div>
+              <div class="section-subtitle" id="chatSubtitle">Messages will appear here</div>
+            </div>
+            <div style="margin-left:auto;">
+              <button class="btn btn-ghost btn-xs" onclick="showToast('info','Compose','Mock compose message')">✍️ Compose</button>
+            </div>
+          </div>
+
+          <div class="chat-messages" id="chatMessages"></div>
+
+          <div class="chat-input-area">
+            <input class="chat-input" id="chatInput" placeholder="Write a message…" onkeydown="if(event.key==='Enter'){sendMessage()}" />
+            <button class="chat-send-btn" onclick="sendMessage()">➤</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script src="core.js"></script>
+<script>
+function getSelectedDriver(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get('driver');
+}
+
+let currentThreadDriverId = null;
+
+function renderChatList(){
+  const list = document.getElementById('chatList');
+  const threads = FC.messages;
+  list.innerHTML = threads.map(t=>{
+    const d = getDriver(t.driver);
+    return `
+      <div class="chat-item ${t.driver===currentThreadDriverId?'active':''}" onclick="openThread('${t.driver}')">
+        <div class="chat-item-avatar" style="background:${d?d.color:'var(--gradient-brand)'};color:#fff">${d?d.initials:'?'} </div>
+        <div class="chat-item-info">
+          <div class="chat-item-name">${d?d.name:t.driver}</div>
+          <div class="chat-item-preview">${t.messages[t.messages.length-1].text}</div>
+        </div>
+        <div class="chat-item-meta">
+          <div class="chat-item-time">${t.messages[t.messages.length-1].time}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderThread(driverId){
+  const thread = FC.messages.find(t=>t.driver===driverId);
+  if(!thread) return;
+
+  const d = getDriver(driverId);
+  currentThreadDriverId = driverId;
+
+  document.getElementById('chatTitle').textContent = d ? d.name : driverId;
+  document.getElementById('chatSubtitle').textContent = d ? d.id : '';
+
+  const messagesEl = document.getElementById('chatMessages');
+  messagesEl.innerHTML = thread.messages.map(m=>{
+    const isMe = m.from==='dispatch';
+    return `
+      <div class="chat-bubble-wrap ${isMe?'me':'them'}">
+        <div class="chat-bubble ${isMe?'me':'them'}">
+          <div>${m.text}</div>
+          <div class="chat-bubble-meta">${m.time}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  renderChatList();
+}
+
+function openThread(driverId){
+  renderThread(driverId);
+}
+
+function sendMessage(){
+  const input = document.getElementById('chatInput');
+  const text = (input.value||'').trim();
+  if(!text || !currentThreadDriverId) return;
+  const thread = FC.messages.find(t=>t.driver===currentThreadDriverId);
+  if(!thread) return;
+
+  thread.messages.push({from:'dispatch', text:text, time:new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})});
+  input.value='';
+  renderThread(currentThreadDriverId);
+  showToast('success','Sent','Message sent');
+}
+
+initApp('Messages <span class="topbar-subtitle">— Dispatch Inbox</span>');
+renderChatList();
+const initial = getSelectedDriver() || (FC.messages[0]?.driver);
+if(initial) renderThread(initial);
+</script>
+</body>
+</html>
+

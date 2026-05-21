@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payroll — FleetCommand</title>
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="app-layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main-content">
+    <header class="topbar" id="topbar"></header>
+    <div class="page-body">
+
+      <div class="section-header mb-6">
+        <div>
+          <div class="section-title" style="font-size:18px;">Payroll</div>
+          <div class="section-subtitle">Monthly overview · Mock totals</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Payroll exported')">📄 Export</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('success','Run payroll','Payroll run scheduled')">▶ Run</button>
+        </div>
+      </div>
+
+      <div class="analytics-grid" id="payrollGrid"></div>
+
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script src="core.js"></script>
+<script>
+function renderPayroll(){
+  const root = document.getElementById('payrollGrid');
+  if(!root) return;
+
+  root.innerHTML = FC.drivers.map(d => `
+    <div class="payroll-card">
+      <div class="payroll-header">
+        <div>
+          <div class="payroll-name">${d.name}</div>
+          <div class="payroll-id">${d.id}</div>
+        </div>
+        <div class="payroll-amount">${formatCurrency(d.earnings)}</div>
+      </div>
+      <div class="payroll-breakdown">Deliveries this month</div>
+
+      <div class="payroll-bar-row">
+        <span class="label">Trips</span>
+        <div class="bar">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${Math.min(100, (d.trips/1600)*100)}%;background:var(--gradient-brand)"></div>
+          </div>
+        </div>
+        <span class="val">${d.trips.toLocaleString()}</span>
+      </div>
+
+      <div class="payroll-bar-row">
+        <span class="label">On Time</span>
+        <div class="bar">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${parseFloat(d.ontime)||0}%;background:var(--gradient-green)"></div>
+          </div>
+        </div>
+        <span class="val">${d.ontime}</span>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:10px;">
+        <button class="btn btn-ghost btn-xs" style="flex:1;" onclick="showToast('info','Payout','Payout details for ${d.id}')">Details</button>
+        <button class="btn btn-ghost btn-xs" style="flex:1;" onclick="showToast('success','Approved','Payroll approved for ${d.id}')">Approve</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+initApp('Payroll <span class="topbar-subtitle">— Payout Overview</span>');
+renderPayroll();
+</script>
+</body>
+</html>
+

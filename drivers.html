@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drivers — FleetCommand</title>
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="app-layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main-content">
+    <header class="topbar" id="topbar"></header>
+    <div class="page-body">
+
+      <!-- Header Actions -->
+      <div class="section-header mb-6">
+        <div>
+          <div class="section-title" style="font-size:18px;">Driver Management</div>
+          <div class="section-subtitle">8 drivers registered · 5 currently active</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchView('cards',this)">Cards</button>
+            <button class="tab-btn" onclick="switchView('table',this)">Table</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Driver report exported to CSV')">📤 Export</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddDriver()">➕ Add Driver</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+        <div class="search-bar" style="width:240px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search drivers…" id="driverSearch" oninput="filterDrivers()">
+        </div>
+        <div class="filter-chips" id="statusFilters">
+          <div class="chip active" data-filter="all" onclick="setFilter(this,'all')">All</div>
+          <div class="chip" data-filter="online" onclick="setFilter(this,'online')">🟢 Online</div>
+          <div class="chip" data-filter="driving" onclick="setFilter(this,'driving')">🚛 Driving</div>
+          <div class="chip" data-filter="offline" onclick="setFilter(this,'offline')">⚫ Offline</div>
+        </div>
+        <select class="form-control form-select" style="width:150px;height:36px;" onchange="filterDrivers()">
+          <option>All Cities</option>
+          <option>Los Angeles</option>
+          <option>Chicago</option>
+          <option>New York</option>
+          <option>Dallas</option>
+        </select>
+      </div>
+
+      <!-- Cards View -->
+      <div class="cards-grid" id="driversCards"></div>
+
+      <!-- Table View (hidden) -->
+      <div class="table-wrap hidden" id="driversTable">
+        <div class="table-toolbar">
+          <span style="font-size:13px;font-weight:600;color:var(--text-muted);" id="tableCount">8 drivers</span>
+          <div style="margin-left:auto;display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Sort','Sorted by name')">Sort: Name</button>
+          </div>
+        </div>
+        <table class="fc-table">
+          <thead><tr>
+            <th>Driver</th><th>Status</th><th>City</th><th>Truck</th>
+            <th>Trips</th><th>Rating</th><th>Risk</th><th>License Exp</th><th>Earnings</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="driversTableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+<script src="core.js"></script>
+<script>
+let activeFilter = 'all';
+let currentView = 'cards';
+
+function setFilter(el, filter) {
+  activeFilter = filter;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderDrivers();
+}
+
+function getFilteredDrivers() {
+  const q = (document.getElementById('driverSearch')?.value || '').toLowerCase();
+  return FC.drivers.filter(d => {
+    const matchFilter = activeFilter === 'all' || d.status === activeFilter;
+    const matchSearch = !q || d.name.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) || d.city.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+}
+
+function filterDrivers() { renderDrivers(); }
+
+function renderDrivers() {
+  const drivers = getFilteredDrivers();
+  if (currentView === 'cards') renderCards(drivers);
+  else renderTableView(drivers);
+}
+
+function renderCards(drivers) {
+  const grid = document.getElementById('driversCards');
+  if (!drivers.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-muted);">No drivers found</div>'; return; }
+  grid.innerHTML = drivers.map(d => `
+    <div class="driver-card" onclick="openDriverProfile('${d.id}')">
+      <div class="driver-card-header">
+        <div class="driver-avatar" style="background:${d.color}20;color:${d.color};">
+          ${d.initials}
+          <div class="status-ring ${d.status === 'online' ? 'online' : d.status === 'driving' ? 'driving' : 'offline'}"></div>
+        </div>
+        <div style="flex:1;">
+          <div class="driver-name">${d.name}</div>
+          <div class="driver-id">${d.id}</div>
+          <div style="margin-top:4px;">${getStatusBadge(d.status)}</div>
+        </div>
+        <div style="text-align:right;">
+          ${starsHTML(d.rating)}
+          ${riskScoreHTML(d.risk)}
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+        <span style="font-size:11px;color:var(--text-muted);">📍 ${d.city}</span>
+        <span style="font-size:11px;color:var(--text-muted);">🚛 ${d.truck || 'Unassigned'}</span>
+        <span style="font-size:11px;color:var(--text-muted);">📋 Exp: ${d.license}</span>
+      </div>
+
+      <div class="driver-stats">
+        <div class="driver-stat">
+          <div class="stat-val" style="color:var(--accent-green);">${formatCurrency(d.earnings)}</div>
+          <div class="stat-lbl">This Month</div>
+        </div>
+        <div class="driver-stat">
+          <div class="stat-val">${d.trips.toLocaleString()}</div>
+          <div class="stat-lbl">Total Trips</div>
+        </div>
+        <div class="driver-stat">
+          <div class="stat-val">${d.ontime}</div>
+          <div class="stat-lbl">On-Time Rate</div>
+        </div>
+        <div class="driver-stat">
+          <div class="stat-val">${(d.miles/1000).toFixed(0)}k</div>
+          <div class="stat-lbl">Miles Driven</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle);">
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="event.stopPropagation();openChat('${d.id}')">💬 Message</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="event.stopPropagation();openDriverProfile('${d.id}')">👤 Profile</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showToast('info','Location','Tracking ${d.name}')">📡</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTableView(drivers) {
+  const tbody = document.getElementById('driversTableBody');
+  document.getElementById('tableCount').textContent = `${drivers.length} drivers`;
+  tbody.innerHTML = drivers.map(d => `
+    <tr onclick="openDriverProfile('${d.id}')">
+      <td class="td-primary">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="driver-avatar" style="background:${d.color}20;color:${d.color};width:32px;height:32px;font-size:12px;">${d.initials}</div>
+          <div>
+            <div>${d.name}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">${d.id}</div>
+          </div>
+        </div>
+      </td>
+      <td>${getStatusBadge(d.status)}</td>
+      <td>${d.city}</td>
+      <td class="font-mono">${d.truck || '—'}</td>
+      <td class="font-mono">${d.trips.toLocaleString()}</td>
+      <td>${starsHTML(d.rating)}</td>
+      <td>${riskScoreHTML(d.risk)}</td>
+      <td class="font-mono">${d.license}</td>
+      <td style="color:var(--accent-green);font-family:var(--font-mono);font-weight:700;">${formatCurrency(d.earnings)}</td>
+      <td class="td-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-xs" onclick="openDriverProfile('${d.id}')">View</button>
+        <button class="btn btn-ghost btn-xs" onclick="openChat('${d.id}')">Chat</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function switchView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('driversCards').classList.toggle('hidden', view === 'table');
+  document.getElementById('driversTable').classList.toggle('hidden', view === 'cards');
+  renderDrivers();
+}
+
+function openDriverProfile(id) {
+  const d = getDriver(id);
+  if (!d) return;
+  const backdrop = document.getElementById('modalBackdrop');
+  const modal = document.getElementById('modalContent');
+  modal.innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">Driver Profile</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding:16px;background:var(--bg-elevated);border-radius:var(--radius-lg);">
+        <div class="driver-avatar" style="width:60px;height:60px;font-size:22px;background:${d.color}20;color:${d.color};">${d.initials}</div>
+        <div style="flex:1;">
+          <div style="font-size:20px;font-weight:700;">${d.name}</div>
+          <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);">${d.id}</div>
+          <div style="display:flex;gap:8px;margin-top:8px;">${getStatusBadge(d.status)} ${riskScoreHTML(d.risk)}</div>
+        </div>
+        <div style="text-align:center;">
+          ${starsHTML(d.rating)}
+          <div style="font-size:24px;font-weight:700;font-family:var(--font-mono);color:var(--accent-amber);">${d.rating}</div>
+          <div style="font-size:10px;color:var(--text-muted);">Rating</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div><div class="form-label">Phone</div><div class="font-mono" style="font-size:13px;">${d.phone}</div></div>
+        <div><div class="form-label">City</div><div>${d.city}</div></div>
+        <div><div class="form-label">License Expiry</div><div class="font-mono" style="font-size:13px;${new Date(d.license) < new Date() ? 'color:var(--accent-red)' : ''}">${d.license}</div></div>
+        <div><div class="form-label">Assigned Truck</div><div class="font-mono">${d.truck || 'None'}</div></div>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="form-label">Performance Stats</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px;">
+          ${[
+            {l:'Total Trips',v:d.trips.toLocaleString(),c:'var(--text-primary)'},
+            {l:'Deliveries',v:d.deliveries.toLocaleString(),c:'var(--accent-green)'},
+            {l:'On-Time Rate',v:d.ontime,c:'var(--accent-cyan)'},
+            {l:'Miles Driven',v:(d.miles/1000).toFixed(0)+'k',c:'var(--accent-violet)'},
+          ].map(s=>`<div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:12px;text-align:center;"><div style="font-size:20px;font-weight:700;font-family:var(--font-mono);color:${s.c};">${s.v}</div><div style="font-size:10px;color:var(--text-muted);margin-top:4px;">${s.l}</div></div>`).join('')}
+        </div>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="form-label">Monthly Earnings</div>
+        <div style="font-size:28px;font-weight:700;font-family:var(--font-mono);color:var(--accent-green);">${formatCurrency(d.earnings)}</div>
+        <div style="font-size:12px;color:var(--text-muted);">Current month</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>
+      <button class="btn btn-ghost btn-sm" onclick="openChat('${id}');closeModal()">💬 Message</button>
+      <button class="btn btn-primary btn-sm" onclick="showToast('success','Updated','Driver profile saved');closeModal()">Save Changes</button>
+    </div>
+  `;
+  backdrop.classList.add('open');
+}
+
+function openChat(driverId) {
+  window.location.href = `messages.html?driver=${driverId}`;
+}
+
+function openAddDriver() {
+  const backdrop = document.getElementById('modalBackdrop');
+  const modal = document.getElementById('modalContent');
+  modal.innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">Add New Driver</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-control" placeholder="John"></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" placeholder="Smith"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phone Number</label><input class="form-control" placeholder="+1 (555) 000-0000"></div>
+        <div class="form-group"><label class="form-label">City</label><input class="form-control" placeholder="Los Angeles"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">License Number</label><input class="form-control" placeholder="CDL-A 123456"></div>
+        <div class="form-group"><label class="form-label">License Expiry</label><input class="form-control" type="date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Assign Truck</label>
+        <select class="form-control form-select">
+          <option value="">— Unassigned —</option>
+          ${FC.trucks.filter(t=>!t.driver).map(t=>`<option value="${t.id}">${t.id} — ${t.make} ${t.model}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="showToast('success','Driver Added','New driver has been registered');closeModal()">Add Driver</button>
+    </div>
+  `;
+  backdrop.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+}
+document.getElementById('modalBackdrop').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+initApp('Drivers <span class="topbar-subtitle">— Driver Management</span>');
+renderDrivers();
+</script>
+</body>
+</html>

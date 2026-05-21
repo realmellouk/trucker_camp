@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fleet — FleetCommand</title>
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="app-layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main-content">
+    <header class="topbar" id="topbar"></header>
+    <div class="page-body">
+
+      <div class="section-header mb-6">
+        <div>
+          <div class="section-title" style="font-size:18px;">Fleet</div>
+          <div class="section-subtitle">{FC.trucks.length} trucks · Live health overview</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Fleet report exported')">📤 Export</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('success','Updated','Fleet health refreshed')">⟳ Refresh</button>
+        </div>
+      </div>
+
+      <div class="analytics-grid" style="margin-bottom:16px;">
+        <div class="chart-container" style="padding:16px;">
+          <div class="section-header" style="margin-bottom:10px;">
+            <div>
+              <div class="section-title">Truck Health Signals</div>
+              <div class="section-subtitle">Operational score by status</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div class="payroll-card" style="flex:1;min-width:240px;">
+              <div class="payroll-header" style="margin-bottom:10px;">
+                <div>
+                  <div class="payroll-name">Active</div>
+                  <div class="payroll-id">In service</div>
+                </div>
+                <div class="payroll-amount" style="color:var(--accent-green);">{countActive}</div>
+              </div>
+              <div class="payroll-breakdown">Health avg: <span style="font-family:var(--font-mono);">{avgActive}%</span></div>
+            </div>
+            <div class="payroll-card" style="flex:1;min-width:240px;">
+              <div class="payroll-header" style="margin-bottom:10px;">
+                <div>
+                  <div class="payroll-name">Maintenance</div>
+                  <div class="payroll-id">Requires attention</div>
+                </div>
+                <div class="payroll-amount" style="color:var(--accent-red);">{countMaint}</div>
+              </div>
+              <div class="payroll-breakdown">Health avg: <span style="font-family:var(--font-mono);">{avgMaint}%</span></div>
+            </div>
+            <div class="payroll-card" style="flex:1;min-width:240px;">
+              <div class="payroll-header" style="margin-bottom:10px;">
+                <div>
+                  <div class="payroll-name">Idle</div>
+                  <div class="payroll-id">Waiting dispatch</div>
+                </div>
+                <div class="payroll-amount" style="color:var(--accent-amber);">{countIdle}</div>
+              </div>
+              <div class="payroll-breakdown">Health avg: <span style="font-family:var(--font-mono);">{avgIdle}%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <span style="font-size:13px;font-weight:600;color:var(--text-muted);" id="fleetCount">{FC.trucks.length} trucks</span>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <div class="search-bar" style="width:240px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" placeholder="Search trucks…" id="fleetSearch" oninput="renderFleet()">
+            </div>
+          </div>
+        </div>
+        <table class="fc-table" id="fleetTable">
+          <thead><tr>
+            <th>Truck</th><th>Status</th><th>Driver</th><th>Health</th><th>Mileage</th>
+            <th>Fuel</th><th>Next Service</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="fleetBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+<script src="core.js"></script>
+<script>
+function computeFleetStats() {
+  const active = FC.trucks.filter(t => t.status === 'active');
+  const maint  = FC.trucks.filter(t => t.status === 'maintenance');
+  const idle   = FC.trucks.filter(t => t.status === 'idle');
+
+  const avg = arr => arr.length ? Math.round(arr.reduce((s,t)=>s + (t.health||0),0)/arr.length) : 0;
+
+  return {
+    countActive: active.length,
+    avgActive: avg(active),
+    countMaint: maint.length,
+    avgMaint: avg(maint),
+    countIdle: idle.length,
+    avgIdle: avg(idle),
+  };
+}
+
+function renderFleetStats() {
+  const stats = computeFleetStats();
+  const body = document.querySelector('.analytics-grid');
+  // Replace placeholders safely by targeting the specific spans by text.
+  const cards = document.querySelectorAll('.payroll-amount');
+  if (cards.length >= 3) {
+    cards[0].textContent = stats.countActive;
+    cards[1].textContent = stats.countMaint;
+    cards[2].textContent = stats.countIdle;
+  }
+  const breakdowns = document.querySelectorAll('.payroll-breakdown');
+  breakdowns.forEach(b => {
+    if (b.textContent.includes('Health avg')) {
+      if (b.textContent.includes('In service')) {
+        b.innerHTML = 'Health avg: <span style="font-family:var(--font-mono);">' + stats.avgActive + '%</span>';
+      }
+    }
+  });
+
+  // More deterministic replacement: direct edit by searching spans inside each payroll-card.
+  const payrollCards = document.querySelectorAll('.payroll-card');
+  payrollCards.forEach(card => {
+    const title = card.querySelector('.payroll-name')?.textContent || '';
+    const label = card.querySelector('.payroll-breakdown');
+    if (!label) return;
+    if (title === 'Active') label.innerHTML = 'Health avg: <span style="font-family:var(--font-mono);">' + stats.avgActive + '%</span>';
+    if (title === 'Maintenance') label.innerHTML = 'Health avg: <span style="font-family:var(--font-mono);">' + stats.avgMaint + '%</span>';
+    if (title === 'Idle') label.innerHTML = 'Health avg: <span style="font-family:var(--font-mono);">' + stats.avgIdle + '%</span>';
+  });
+}
+
+function getDriverName(driverId) {
+  if (!driverId) return '—';
+  const d = getDriver(driverId);
+  return d ? d.name : driverId;
+}
+
+function renderFleet() {
+  const q = (document.getElementById('fleetSearch')?.value || '').toLowerCase();
+  const tbody = document.getElementById('fleetBody');
+  const list = FC.trucks.filter(t => {
+    if (!q) return true;
+    return (t.id || '').toLowerCase().includes(q) || (t.plate || '').toLowerCase().includes(q) || (t.make || '').toLowerCase().includes(q) || (t.model || '').toLowerCase().includes(q) || (t.status || '').toLowerCase().includes(q);
+  });
+
+  document.getElementById('fleetCount').textContent = `${list.length} trucks`;
+  tbody.innerHTML = list.map(t => {
+    return `
+      <tr>
+        <td class="td-primary">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="driver-avatar" style="background:${t.color || 'var(--accent-cyan)'}20;color:${t.color || 'var(--accent-cyan)'};width:34px;height:34px;font-size:12px;">${t.id}</div>
+            <div>
+              <div style="font-weight:700;">${t.make} ${t.model}</div>
+              <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">${t.plate}</div>
+            </div>
+          </div>
+        </td>
+        <td>${getStatusBadge(t.status)}</td>
+        <td>${getDriverName(t.driver)}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="flex:1;">
+              <div class="progress-bar"><div class="progress-fill" style="width:${t.health||0}%;background:var(--gradient-brand)"></div></div>
+            </div>
+            <div class="font-mono" style="min-width:44px;text-align:right;">${t.health||0}%</div>
+          </div>
+        </td>
+        <td class="font-mono">${(t.mileage/1000).toFixed(0)}k</td>
+        <td class="font-mono">${t.fuel}%</td>
+        <td class="font-mono">${t.nextService ? (t.nextService/1000).toFixed(1) + 'k mi' : '—'}</td>
+        <td class="td-actions" onclick="event.stopPropagation()">
+          <button class="btn btn-ghost btn-xs" onclick="showToast('info','Truck','Opened ${t.id}')">View</button>
+          <button class="btn btn-ghost btn-xs" onclick="showToast('success','Task','Inspection scheduled for ${t.id}')">Inspect</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+initApp('Fleet <span class="topbar-subtitle">— Trucks & Health</span>');
+renderFleetStats();
+renderFleet();
+</script>
+</body>
+</html>
+

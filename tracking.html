@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live Tracking — FleetCommand</title>
+<link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="app-layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main-content">
+    <header class="topbar" id="topbar"></header>
+    <div class="page-body">
+
+      <div class="section-header mb-6">
+        <div>
+          <div class="section-title" style="font-size:18px;">Live Fleet Tracking</div>
+          <div class="section-subtitle"><span class="live-dot"></span> {activeCount} vehicles active</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Legend','Colors represent status')">Legend</button>
+          <button class="btn btn-primary btn-sm" onclick="centerOnAll()">Center All</button>
+        </div>
+      </div>
+
+      <div class="map-container" style="height:520px;">
+        <div class="map-grid"></div>
+        <div class="map-glow" style="width:260px;height:260px;background:rgba(0,210,255,0.06);top:8%;left:22%;"></div>
+        <div class="map-glow" style="width:200px;height:200px;background:rgba(0,229,160,0.05);bottom:10%;right:18%;"></div>
+
+        <!-- Truck pins (mock) -->
+        <div id="trackingPins" style="position:absolute;inset:0;">
+        </div>
+
+        <svg class="map-route" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.15;">
+          <path d="M 60 420 Q 220 260 420 300" stroke="var(--accent-cyan)" stroke-width="1.5" fill="none" stroke-dasharray="6,4"/>
+          <path d="M 420 300 Q 560 340 680 160" stroke="var(--accent-green)" stroke-width="1.5" fill="none" stroke-dasharray="6,4"/>
+          <path d="M 120 120 Q 260 220 460 120" stroke="var(--accent-amber)" stroke-width="1.5" fill="none" stroke-dasharray="6,4" stroke="rgba(255,184,48,0.6)"/>
+        </svg>
+
+        <div class="map-controls">
+          <div class="map-ctrl-btn">+</div>
+          <div class="map-ctrl-btn">−</div>
+          <div class="map-ctrl-btn">⤴</div>
+        </div>
+
+        <div style="position:absolute;bottom:12px;left:12px;background:var(--bg-surface);border:1px solid var(--border-mid);border-radius:var(--radius-sm);padding:8px 12px;font-size:10px;display:flex;gap:12px;flex-wrap:wrap;">
+          <span style="color:var(--accent-cyan);">● Driving</span>
+          <span style="color:var(--accent-green);">● Online</span>
+          <span style="color:var(--accent-red);">● Maintenance/Delayed</span>
+          <span style="color:var(--text-muted);">● Offline/Idle</span>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="chart-container" style="padding:16px;">
+          <div class="section-header" style="margin-bottom:12px;">
+            <div>
+              <div class="section-title">Fleet Summary</div>
+              <div class="section-subtitle">Status breakdown</div>
+            </div>
+          </div>
+          <div class="analytics-grid">
+            <div class="payroll-card" style="padding:16px;">
+              <div class="payroll-name">Online</div>
+              <div class="payroll-amount" style="color:var(--accent-green);" id="countOnline">0</div>
+              <div class="payroll-breakdown">Operational</div>
+            </div>
+            <div class="payroll-card" style="padding:16px;">
+              <div class="payroll-name">Driving</div>
+              <div class="payroll-amount" style="color:var(--accent-cyan);" id="countDriving">0</div>
+              <div class="payroll-breakdown">On the move</div>
+            </div>
+            <div class="payroll-card" style="padding:16px;">
+              <div class="payroll-name">Maintenance</div>
+              <div class="payroll-amount" style="color:var(--accent-red);" id="countMaint">0</div>
+              <div class="payroll-breakdown">Needs attention</div>
+            </div>
+            <div class="payroll-card" style="padding:16px;">
+              <div class="payroll-name">Idle/Offline</div>
+              <div class="payroll-amount" style="color:var(--text-muted);" id="countIdle">0</div>
+              <div class="payroll-breakdown">Available</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container" style="padding:16px;">
+          <div class="section-header" style="margin-bottom:12px;">
+            <div>
+              <div class="section-title">Tracked Vehicles</div>
+              <div class="section-subtitle">Click a pin for details</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="fc-table">
+              <thead><tr><th>Truck</th><th>Status</th><th>Driver</th><th>Health</th></tr></thead>
+              <tbody id="trackingTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script src="core.js"></script>
+<script>
+// Simple deterministic pseudo-random positions for pins
+function hashCode(str){
+  let h=0; for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i); h|=0;}
+  return Math.abs(h);
+}
+function posFor(truckId){
+  const h = hashCode(truckId);
+  const x = 10 + (h % 80); // %
+  const y = 12 + ((h>>3) % 76);
+  return {left:x+'%', top:y+'%'};
+}
+function statusColor(status){
+  if(status==='active') return 'var(--accent-green)';
+  if(status==='idle') return 'var(--text-muted)';
+  if(status==='maintenance') return 'var(--accent-red)';
+  return 'var(--accent-cyan)';
+}
+
+function renderTracking(){
+  const pins = document.getElementById('trackingPins');
+  const table = document.getElementById('trackingTable');
+
+  const trucks = FC.trucks;
+  const active = trucks.filter(t => t.status==='active' || t.status==='idle');
+  document.querySelectorAll('.section-subtitle')[0].innerHTML = '<span class="live-dot"></span> '+active.length+' vehicles active';
+
+  const countOnline = trucks.filter(t=>t.status==='active').length;
+  const countDriving = trucks.filter(t=>t.status==='active' || t.status==='idle').length - countOnline;
+  const countMaint = trucks.filter(t=>t.status==='maintenance').length;
+  const countIdle = trucks.filter(t=>t.status==='idle').length;
+
+  const onlineEl = document.getElementById('countOnline');
+  const drivingEl = document.getElementById('countDriving');
+  const maintEl = document.getElementById('countMaint');
+  const idleEl = document.getElementById('countIdle');
+
+  if(onlineEl) onlineEl.textContent = countOnline;
+  if(drivingEl) drivingEl.textContent = Math.max(0,countDriving);
+  if(maintEl) maintEl.textContent = countMaint;
+  if(idleEl) idleEl.textContent = countIdle;
+
+  pins.innerHTML = trucks.map(t => {
+    const p = posFor(t.id);
+    const driverName = getDriver(t.driver)?.initials || '—';
+    const color = statusColor(t.status);
+    const warn = t.status==='maintenance' ? '⚠️' : '🚚';
+    return `<div class="map-truck" style="top:${p.top};left:${p.left};color:${t.status==='maintenance'?'var(--accent-red)':undefined}" title="${t.id} — ${t.status}" onclick="showToast('info','Truck ${t.id}','Health ${t.health}%')">${warn}<div class="map-label" style="top:-24px;left:20px;border-color:rgba(0,210,255,0.3);color:${color}">${t.id}</div></div>`;
+  }).join('');
+
+  table.innerHTML = trucks.map(t => {
+    const drv = t.driver ? getDriver(t.driver) : null;
+    return `<tr>
+      <td class="font-mono">${t.id}</td>
+      <td>${getStatusBadge(t.status)}</td>
+      <td>${drv?drv.name:'—'}</td>
+      <td class="font-mono" style="color:var(--accent-green);font-weight:700;">${t.health}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function centerOnAll(){
+  showToast('success','Tracking','Centered on all vehicles');
+}
+
+initApp('Tracking <span class="topbar-subtitle">— Live Map</span>');
+renderTracking();
+setInterval(renderTracking, 35000);
+</script>
+</body>
+</html>
+
