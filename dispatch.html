@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dispatch — FleetCommand</title>
+<title>Expéditions — FleetCommand</title>
 <link rel="stylesheet" href="main.css">
 </head>
 <body>
@@ -16,30 +16,30 @@
 
       <div class="section-header mb-6">
         <div>
-          <div class="section-title" style="font-size:18px;">Dispatch Board</div>
-          <div class="section-subtitle">Drag cards to reprioritize (mock)</div>
+          <div class="section-title" style="font-size:18px;">Tableau de dispatch</div>
+          <div class="section-subtitle">Glisser les cartes pour re-prioriser (maquette)</div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Refresh','Dispatch updated')">⟳ Refresh</button>
-          <button class="btn btn-primary btn-sm" onclick="showToast('success','Created','New dispatch task created')">➕ New Task</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Actualiser','Tableau de dispatch mis à jour')">⟳ Actualiser</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('success','Créé','Nouvelle tâche de dispatch créée')">➕ Nouvelle tâche</button>
         </div>
       </div>
 
       <div class="dispatch-columns" id="dispatchCols">
         <div class="dispatch-col" data-col="pending">
-          <div class="dispatch-col-header"><span>Pending</span><span class="badge badge-pending">{pendingCount}</span></div>
+          <div class="dispatch-col-header"><span>En attente</span><span class="badge badge-pending">{pendingCount}</span></div>
           <div class="dispatch-col-body" id="col-pending"></div>
         </div>
         <div class="dispatch-col" data-col="in_progress">
-          <div class="dispatch-col-header"><span>In Progress</span><span class="badge badge-transit">{inprogCount}</span></div>
+          <div class="dispatch-col-header"><span>En cours</span><span class="badge badge-transit">{inprogCount}</span></div>
           <div class="dispatch-col-body" id="col-in_progress"></div>
         </div>
         <div class="dispatch-col" data-col="delayed">
-          <div class="dispatch-col-header"><span>Delayed</span><span class="badge badge-delayed">{delayedCount}</span></div>
+          <div class="dispatch-col-header"><span>En retard</span><span class="badge badge-delayed">{delayedCount}</span></div>
           <div class="dispatch-col-body" id="col-delayed"></div>
         </div>
         <div class="dispatch-col" data-col="completed">
-          <div class="dispatch-col-header"><span>Completed</span><span class="badge badge-delivered">{doneCount}</span></div>
+          <div class="dispatch-col-header"><span>Terminé</span><span class="badge badge-delivered">{doneCount}</span></div>
           <div class="dispatch-col-body" id="col-completed"></div>
         </div>
       </div>
@@ -86,7 +86,7 @@ function renderDispatch(){
       <div style="margin-top:8px;font-size:12px;color:var(--text-secondary)">ETA: <span class="font-mono">${d.eta}</span></div>
     `;
 
-    card.addEventListener('click', ()=> showToast('info','Delivery', d.id+' selected'));
+    card.addEventListener('click', ()=> showToast('info','Livraison', d.id+' sélectionnée'));
 
     document.getElementById('col-'+col).appendChild(card);
   });
@@ -121,7 +121,7 @@ function enableDnD(){
       const id = e.dataTransfer.getData('text/plain');
       const card = document.querySelector('.dispatch-card[data-delivery-id="'+id+'"]');
       if(card) body.appendChild(card);
-      showToast('success','Dispatch','Moved '+id+' to new lane');
+      showToast('success','Expédition', id+' déplacée vers une nouvelle colonne');
     });
   });
 
@@ -132,7 +132,7 @@ function enableDnD(){
   });
 }
 
-initApp('Dispatch <span class="topbar-subtitle">— Dispatch Board</span>');
+initApp('Expéditions <span class="topbar-subtitle">— Tableau de dispatch</span>');
 renderDispatch();
 enableDnD();
 setTimeout(enableDnD, 50);

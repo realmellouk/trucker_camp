@@ -20,7 +20,7 @@
           <div class="section-subtitle">10 expéditions · 23–25 janv. 2025</div>
         </div>
         <div style="display:flex;gap:10px;">
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Rapport de livraisons exporté')">📤 Exporter</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Exportation','Rapport de livraisons exporté')">📤 Exporter</button>
           <button class="btn btn-primary btn-sm" onclick="openNewDelivery()">➕ Nouvelle livraison</button>
         </div>
       </div>
@@ -217,7 +217,7 @@ function openDeliveryDetail(id) {
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Fermer</button>
       ${d.status==='pending'?`<button class="btn btn-primary btn-sm" onclick="openAssignDriver('${id}');closeModal()">Assigner conducteur</button>`:''}
-      <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Détails de livraison exportés');closeModal()">📤 Exporter BdL</button>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('info','Exportation','Détails de livraison exportés');closeModal()">📤 Exporter BdL</button>
     </div>
   `;
   backdrop.classList.add('open');

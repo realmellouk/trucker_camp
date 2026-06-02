@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -16,25 +16,25 @@
 
       <div class="chat-layout">
         <div class="chat-sidebar">
-          <div class="chat-sidebar-header">Driver Conversations</div>
+          <div class="chat-sidebar-header">Conversations conducteurs</div>
           <div id="chatList"></div>
         </div>
 
         <div class="chat-main">
           <div class="chat-header">
             <div>
-              <div class="section-title" id="chatTitle" style="font-size:16px;">Select a driver</div>
-              <div class="section-subtitle" id="chatSubtitle">Messages will appear here</div>
+              <div class="section-title" id="chatTitle" style="font-size:16px;">Sélectionnez un conducteur</div>
+              <div class="section-subtitle" id="chatSubtitle">Les messages apparaissent ici</div>
             </div>
             <div style="margin-left:auto;">
-              <button class="btn btn-ghost btn-xs" onclick="showToast('info','Compose','Mock compose message')">✍️ Compose</button>
+              <button class="btn btn-ghost btn-xs" onclick="showToast('info','Rédiger','Message fictif créé')">✍️ Rédiger</button>
             </div>
           </div>
 
           <div class="chat-messages" id="chatMessages"></div>
 
           <div class="chat-input-area">
-            <input class="chat-input" id="chatInput" placeholder="Write a message…" onkeydown="if(event.key==='Enter'){sendMessage()}" />
+            <input class="chat-input" id="chatInput" placeholder="Écrire un message…" onkeydown="if(event.key==='Enter'){sendMessage()}" />
             <button class="chat-send-btn" onclick="sendMessage()">➤</button>
           </div>
         </div>
@@ -118,10 +118,10 @@ function sendMessage(){
   thread.messages.push({from:'dispatch', text:text, time:new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})});
   input.value='';
   renderThread(currentThreadDriverId);
-  showToast('success','Sent','Message sent');
+  showToast('success','Envoyé','Message envoyé');
 }
 
-initApp('Messages <span class="topbar-subtitle">— Dispatch Inbox</span>');
+initApp('Messages <span class="topbar-subtitle">— Boîte de réception</span>');
 renderChatList();
 const initial = getSelectedDriver() || (FC.messages[0]?.driver);
 if(initial) renderThread(initial);

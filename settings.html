@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Settings — FleetCommand</title>
+<title>Paramètres — FleetCommand</title>
 <link rel="stylesheet" href="main.css">
 </head>
 <body>
@@ -16,12 +16,12 @@
 
       <div class="section-header mb-6">
         <div>
-          <div class="section-title" style="font-size:18px;">Settings</div>
-          <div class="section-subtitle">Preferences & access (mock)</div>
+          <div class="section-title" style="font-size:18px;">Paramètres</div>
+          <div class="section-subtitle">Préférences et accès (maquette)</div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Saved','Settings saved (mock)')">Save</button>
-          <button class="btn btn-primary btn-sm" onclick="showToast('success','Updated','Preferences updated (mock)')">Apply</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Enregistré','Paramètres enregistrés (maquette)')">Enregistrer</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('success','Mis à jour','Préférences mises à jour (maquette)')">Appliquer</button>
         </div>
       </div>
 
@@ -30,8 +30,8 @@
 
         <div class="settings-row">
           <div>
-            <div class="settings-row-label">Delivery Alerts</div>
-            <div class="settings-row-desc">Receive alerts for delays & status changes</div>
+            <div class="settings-row-label">Alertes de livraison</div>
+            <div class="settings-row-desc">Recevoir des alertes en cas de retard ou de changement de statut</div>
           </div>
           <label class="toggle">
             <input type="checkbox" checked>
@@ -41,8 +41,8 @@
 
         <div class="settings-row">
           <div>
-            <div class="settings-row-label">Maintenance Reminders</div>
-            <div class="settings-row-desc">Get reminders before service windows</div>
+            <div class="settings-row-label">Rappels maintenance</div>
+            <div class="settings-row-desc">Recevoir des rappels avant les créneaux d’entretien</div>
           </div>
           <label class="toggle">
             <input type="checkbox" checked>
@@ -52,8 +52,8 @@
 
         <div class="settings-row">
           <div>
-            <div class="settings-row-label">Driver Messages</div>
-            <div class="settings-row-desc">New message notifications</div>
+            <div class="settings-row-label">Messages conducteurs</div>
+            <div class="settings-row-desc">Notifications de nouveaux messages</div>
           </div>
           <label class="toggle">
             <input type="checkbox">
@@ -63,11 +63,11 @@
       </div>
 
       <div class="settings-section">
-        <div class="settings-section-header">Account</div>
+        <div class="settings-section-header">Compte</div>
 
         <div class="settings-row">
           <div>
-            <div class="settings-row-label">Organization</div>
+            <div class="settings-row-label">Organisation</div>
             <div class="settings-row-desc">FleetCommand Logistics</div>
           </div>
           <div class="text-muted" style="font-family:var(--font-mono);font-size:12px;">FC-L01</div>
@@ -75,8 +75,8 @@
 
         <div class="settings-row">
           <div>
-            <div class="settings-row-label">Admin Role</div>
-            <div class="settings-row-desc">Manage fleet, dispatch & approvals</div>
+            <div class="settings-row-label">Rôle administrateur</div>
+            <div class="settings-row-desc">Gérer la flotte, dispatch et approbations</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
             <span class="badge badge-online">Admin</span>
@@ -85,8 +85,8 @@
 
         <div class="settings-row">
           <div>
-            <div class="settings-row-label">Security</div>
-            <div class="settings-row-desc">Two-factor authentication</div>
+            <div class="settings-row-label">Sécurité</div>
+            <div class="settings-row-desc">Authentification à deux facteurs</div>
           </div>
           <label class="toggle">
             <input type="checkbox" checked>
@@ -105,7 +105,7 @@
 
 <script src="core.js"></script>
 <script>
-initApp('Settings <span class="topbar-subtitle">— Preferences</span>');
+initApp('Paramètres <span class="topbar-subtitle">— Préférences</span>');
 </script>
 </body>
 </html>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Analytics — FleetCommand</title>
+<title>Analytique — FleetCommand</title>
 <link rel="stylesheet" href="main.css">
 </head>
 <body>
@@ -16,12 +16,12 @@
 
       <div class="section-header mb-6">
         <div>
-          <div class="section-title" style="font-size:18px;">Analytics</div>
-          <div class="section-subtitle">KPIs, insights & trends (mock)</div>
+          <div class="section-title" style="font-size:18px;">Analytique</div>
+          <div class="section-subtitle">Indicateurs, insights et tendances (maquette)</div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Refresh','Analytics recalculated')">⟳ Refresh</button>
-          <button class="btn btn-primary btn-sm" onclick="showToast('success','Report','Analytics report generated')">Generate Report</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Actualiser','Analytique recalculée')">⟳ Actualiser</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('success','Rapport','Rapport analytique généré')">Générer le rapport</button>
         </div>
       </div>
 
@@ -29,8 +29,8 @@
         <div class="chart-container" style="grid-column: span 2;">
           <div class="section-header">
             <div>
-              <div class="section-title">Revenue Trend</div>
-              <div class="section-subtitle">Year-to-date (mock)</div>
+              <div class="section-title">Tendance des revenus</div>
+              <div class="section-subtitle">Année en cours (maquette)</div>
             </div>
           </div>
           <div style="height:260px;">
@@ -40,8 +40,8 @@
         <div class="chart-container">
           <div class="section-header">
             <div>
-              <div class="section-title">Delivery Success</div>
-              <div class="section-subtitle">On time vs delayed (mock)</div>
+              <div class="section-title">Succès des livraisons</div>
+              <div class="section-subtitle">Ponctuelles vs retardées (maquette)</div>
             </div>
           </div>
           <div style="height:240px;display:flex;align-items:center;justify-content:center;">
@@ -56,29 +56,29 @@
         <div class="chart-container">
           <div class="section-header">
             <div>
-              <div class="section-title">Operations Metrics</div>
-              <div class="section-subtitle">Last 7 days</div>
+              <div class="section-title">Indicateurs opérationnels</div>
+              <div class="section-subtitle">7 derniers jours</div>
             </div>
           </div>
           <div>
-            <div class="metric-row"><div class="metric-label">Avg fuel spend</div><div class="metric-val">$4.2k</div></div>
-            <div class="metric-row"><div class="metric-label">On-time rate</div><div class="metric-val" style="color:var(--accent-green);">87%</div></div>
-            <div class="metric-row"><div class="metric-label">Delayed incidents</div><div class="metric-val" style="color:var(--accent-red);">9</div></div>
-            <div class="metric-row"><div class="metric-label">Avg miles / trip</div><div class="metric-val">312</div></div>
-            <div class="metric-row"><div class="metric-label">Active drivers</div><div class="metric-val">5</div></div>
+            <div class="metric-row"><div class="metric-label">Dépenses carburant moy.</div><div class="metric-val">$4.2k</div></div>
+            <div class="metric-row"><div class="metric-label">Taux de ponctualité</div><div class="metric-val" style="color:var(--accent-green);">87%</div></div>
+            <div class="metric-row"><div class="metric-label">Incidents retardés</div><div class="metric-val" style="color:var(--accent-red);">9</div></div>
+            <div class="metric-row"><div class="metric-label">Km moy. / trajet</div><div class="metric-val">312</div></div>
+            <div class="metric-row"><div class="metric-label">Conducteurs actifs</div><div class="metric-val">5</div></div>
           </div>
         </div>
 
         <div class="chart-container">
           <div class="section-header">
             <div>
-              <div class="section-title">Top Drivers</div>
-              <div class="section-subtitle">Based on earnings</div>
+              <div class="section-title">Meilleurs conducteurs</div>
+              <div class="section-subtitle">Basé sur les revenus</div>
             </div>
           </div>
           <div class="table-wrap">
             <table class="fc-table">
-              <thead><tr><th>Driver</th><th>Status</th><th>Earnings</th><th>Rating</th></tr></thead>
+              <thead><tr><th>Conducteur</th><th>Statut</th><th>Revenus</th><th>Note</th></tr></thead>
               <tbody id="topDrivers"></tbody>
             </table>
           </div>
@@ -124,7 +124,7 @@ function initAnalyticsCharts(){
 
   new Chart(revCtx,{
     type:'line',
-    data:{labels:FC.revenue.labels, datasets:[{label:'Revenue', data:FC.revenue.data, borderColor:'#00d2ff', backgroundColor:gradient, borderWidth:2, fill:true, tension:0.35, pointRadius:3, pointBackgroundColor:'#00d2ff', pointBorderWidth:2, pointBorderColor:'#080c14'}]},
+    data:{labels:FC.revenue.labels, datasets:[{label:'Revenu', data:FC.revenue.data, borderColor:'#00d2ff', backgroundColor:gradient, borderWidth:2, fill:true, tension:0.35, pointRadius:3, pointBackgroundColor:'#00d2ff', pointBorderWidth:2, pointBorderColor:'#080c14'}]},
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{color:gridColor}, ticks:{color:textColor, font:{size:10}}}, y:{grid:{color:gridColor}, ticks:{color:textColor, font:{size:10}, callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}}
   });
 
@@ -136,7 +136,7 @@ function initAnalyticsCharts(){
   });
 }
 
-initApp('Analytics <span class="topbar-subtitle">— Trends</span>');
+initApp('Analytique <span class="topbar-subtitle">— Tendances</span>');
 renderTopDrivers();
 setTimeout(initAnalyticsCharts, 50);
 </script>

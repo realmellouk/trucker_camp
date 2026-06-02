@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Payroll — FleetCommand</title>
+<title>Paie — FleetCommand</title>
 <link rel="stylesheet" href="main.css">
 </head>
 <body>
@@ -16,12 +16,12 @@
 
       <div class="section-header mb-6">
         <div>
-          <div class="section-title" style="font-size:18px;">Payroll</div>
-          <div class="section-subtitle">Monthly overview · Mock totals</div>
+          <div class="section-title" style="font-size:18px;">Paie</div>
+          <div class="section-subtitle">Vue mensuelle · Totaux factices</div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Payroll exported')">📄 Export</button>
-          <button class="btn btn-primary btn-sm" onclick="showToast('success','Run payroll','Payroll run scheduled')">▶ Run</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Exporter','Paie exportée')">📄 Exporter</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('success','Lancer','Paie programmée')">▶ Lancer</button>
         </div>
       </div>
 
@@ -50,10 +50,10 @@ function renderPayroll(){
         </div>
         <div class="payroll-amount">${formatCurrency(d.earnings)}</div>
       </div>
-      <div class="payroll-breakdown">Deliveries this month</div>
+      <div class="payroll-breakdown">Livraisons ce mois-ci</div>
 
       <div class="payroll-bar-row">
-        <span class="label">Trips</span>
+        <span class="label">Trajets</span>
         <div class="bar">
           <div class="progress-bar">
             <div class="progress-fill" style="width:${Math.min(100, (d.trips/1600)*100)}%;background:var(--gradient-brand)"></div>
@@ -63,7 +63,7 @@ function renderPayroll(){
       </div>
 
       <div class="payroll-bar-row">
-        <span class="label">On Time</span>
+        <span class="label">Ponctualité</span>
         <div class="bar">
           <div class="progress-bar">
             <div class="progress-fill" style="width:${parseFloat(d.ontime)||0}%;background:var(--gradient-green)"></div>
@@ -73,14 +73,14 @@ function renderPayroll(){
       </div>
 
       <div style="margin-top:12px;display:flex;gap:10px;">
-        <button class="btn btn-ghost btn-xs" style="flex:1;" onclick="showToast('info','Payout','Payout details for ${d.id}')">Details</button>
-        <button class="btn btn-ghost btn-xs" style="flex:1;" onclick="showToast('success','Approved','Payroll approved for ${d.id}')">Approve</button>
+        <button class="btn btn-ghost btn-xs" style="flex:1;" onclick="showToast('info','Détails','Détails de paiement pour ${d.id}')">Détails</button>
+        <button class="btn btn-ghost btn-xs" style="flex:1;" onclick="showToast('success','Approuvé','Paie approuvée pour ${d.id}')">Approuver</button>
       </div>
     </div>
   `).join('');
 }
 
-initApp('Payroll <span class="topbar-subtitle">— Payout Overview</span>');
+initApp('Paie <span class="topbar-subtitle">— Vue des paiements</span>');
 renderPayroll();
 </script>
 </body>

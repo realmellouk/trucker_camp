@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Live Tracking — FleetCommand</title>
+<title>Suivi en direct — FleetCommand</title>
 <link rel="stylesheet" href="main.css">
 <link rel="stylesheet" href="main.css">
 </head>
@@ -17,11 +17,11 @@
 
       <div class="section-header mb-6">
         <div>
-          <div class="section-title" style="font-size:18px;">Live Fleet Tracking</div>
-          <div class="section-subtitle"><span class="live-dot"></span> {activeCount} vehicles active</div>
+          <div class="section-title" style="font-size:18px;">Suivi en direct de la flotte</div>
+          <div class="section-subtitle"><span class="live-dot"></span> {activeCount} véhicules actifs</div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Legend','Colors represent status')">Legend</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Légende','Les couleurs représentent le statut')">Légende</button>
           <button class="btn btn-primary btn-sm" onclick="centerOnAll()">Center All</button>
         </div>
       </div>
@@ -48,10 +48,10 @@
         </div>
 
         <div style="position:absolute;bottom:12px;left:12px;background:var(--bg-surface);border:1px solid var(--border-mid);border-radius:var(--radius-sm);padding:8px 12px;font-size:10px;display:flex;gap:12px;flex-wrap:wrap;">
-          <span style="color:var(--accent-cyan);">● Driving</span>
-          <span style="color:var(--accent-green);">● Online</span>
-          <span style="color:var(--accent-red);">● Maintenance/Delayed</span>
-          <span style="color:var(--text-muted);">● Offline/Idle</span>
+          <span style="color:var(--accent-cyan);">● En route</span>
+          <span style="color:var(--accent-green);">● En ligne</span>
+          <span style="color:var(--accent-red);">● Maintenance/Retardé</span>
+          <span style="color:var(--text-muted);">● Inactif/Hors ligne</span>
         </div>
       </div>
 
@@ -59,30 +59,30 @@
         <div class="chart-container" style="padding:16px;">
           <div class="section-header" style="margin-bottom:12px;">
             <div>
-              <div class="section-title">Fleet Summary</div>
-              <div class="section-subtitle">Status breakdown</div>
+              <div class="section-title">Synthèse de la flotte</div>
+              <div class="section-subtitle">Répartition des statuts</div>
             </div>
           </div>
           <div class="analytics-grid">
             <div class="payroll-card" style="padding:16px;">
-              <div class="payroll-name">Online</div>
+              <div class="payroll-name">En ligne</div>
               <div class="payroll-amount" style="color:var(--accent-green);" id="countOnline">0</div>
-              <div class="payroll-breakdown">Operational</div>
+              <div class="payroll-breakdown">En service</div>
             </div>
             <div class="payroll-card" style="padding:16px;">
-              <div class="payroll-name">Driving</div>
+              <div class="payroll-name">En route</div>
               <div class="payroll-amount" style="color:var(--accent-cyan);" id="countDriving">0</div>
-              <div class="payroll-breakdown">On the move</div>
+              <div class="payroll-breakdown">En mouvement</div>
             </div>
             <div class="payroll-card" style="padding:16px;">
               <div class="payroll-name">Maintenance</div>
               <div class="payroll-amount" style="color:var(--accent-red);" id="countMaint">0</div>
-              <div class="payroll-breakdown">Needs attention</div>
+              <div class="payroll-breakdown">Besoin d’attention</div>
             </div>
             <div class="payroll-card" style="padding:16px;">
-              <div class="payroll-name">Idle/Offline</div>
+              <div class="payroll-name">Inactif/Hors ligne</div>
               <div class="payroll-amount" style="color:var(--text-muted);" id="countIdle">0</div>
-              <div class="payroll-breakdown">Available</div>
+              <div class="payroll-breakdown">Disponible</div>
             </div>
           </div>
         </div>
@@ -90,13 +90,13 @@
         <div class="chart-container" style="padding:16px;">
           <div class="section-header" style="margin-bottom:12px;">
             <div>
-              <div class="section-title">Tracked Vehicles</div>
-              <div class="section-subtitle">Click a pin for details</div>
+              <div class="section-title">Véhicules suivis</div>
+              <div class="section-subtitle">Cliquez sur une icône pour les détails</div>
             </div>
           </div>
           <div class="table-wrap">
             <table class="fc-table">
-              <thead><tr><th>Truck</th><th>Status</th><th>Driver</th><th>Health</th></tr></thead>
+              <thead><tr><th>Camion</th><th>Statut</th><th>Conducteur</th><th>État</th></tr></thead>
               <tbody id="trackingTable"></tbody>
             </table>
           </div>
@@ -159,7 +159,8 @@ function renderTracking(){
     const driverName = getDriver(t.driver)?.initials || '—';
     const color = statusColor(t.status);
     const warn = t.status==='maintenance' ? '⚠️' : '🚚';
-    return `<div class="map-truck" style="top:${p.top};left:${p.left};color:${t.status==='maintenance'?'var(--accent-red)':undefined}" title="${t.id} — ${t.status}" onclick="showToast('info','Truck ${t.id}','Health ${t.health}%')">${warn}<div class="map-label" style="top:-24px;left:20px;border-color:rgba(0,210,255,0.3);color:${color}">${t.id}</div></div>`;
+    const statusLabel = t.status === 'active' ? 'En ligne' : t.status === 'idle' ? 'Inactif/Hors ligne' : t.status === 'maintenance' ? 'Maintenance' : t.status;
+    return `<div class="map-truck" style="top:${p.top};left:${p.left};color:${t.status==='maintenance'?'var(--accent-red)':undefined}" title="${t.id} — ${statusLabel}" onclick="showToast('info','Camion ${t.id}','Santé ${t.health}%')">${warn}<div class="map-label" style="top:-24px;left:20px;border-color:rgba(0,210,255,0.3);color:${color}">${t.id}</div></div>`;
   }).join('');
 
   table.innerHTML = trucks.map(t => {
@@ -177,7 +178,7 @@ function centerOnAll(){
   showToast('success','Tracking','Centered on all vehicles');
 }
 
-initApp('Tracking <span class="topbar-subtitle">— Live Map</span>');
+initApp('Suivi <span class="topbar-subtitle">— Carte en direct</span>');
 renderTracking();
 setInterval(renderTracking, 35000);
 </script>

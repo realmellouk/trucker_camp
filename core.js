@@ -163,7 +163,7 @@ const NAV_ITEMS = [
   { icon:'📦', label:'Livraisons',     href:'deliveries.html', badge:3 },
   { icon:'🚛', label:'Flotte',         href:'fleet.html',      badge:null },
   { icon:'📡', label:'Suivi',          href:'tracking.html',   badge:'green' },
-  { icon:'🗂️', label:'Dispatch',       href:'dispatch.html',   badge:null },
+  { icon:'🗂️', label:'Expéditions',    href:'dispatch.html',   badge:null },
   { icon:'💬', label:'Messages',       href:'messages.html',   badge:4 },
   { icon:'💰', label:'Paie',           href:'payroll.html',    badge:null },
   { icon:'📈', label:'Analytique',     href:'analytics.html',  badge:null },
@@ -225,7 +225,7 @@ function buildTopbar(title) {
   const current = window.location.pathname.split('/').pop() || 'index.html';
   const currentItem = NAV_ITEMS.find(item => item.href === current) || NAV_ITEMS[0];
   const topMenu = [
-    { label:'Dispatch', href:'dispatch.html' },
+    { label:'Expéditions', href:'dispatch.html' },
     { label:'Livraisons', href:'deliveries.html' },
     { label:'Messages', href:'messages.html' },
     { label:'Suivi en direct', href:'tracking.html' }
