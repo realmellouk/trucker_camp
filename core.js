@@ -63,11 +63,11 @@ const FC = {
   ],
 
   alerts: [
-    { type:'critical', icon:'🚨', title:'TRK-088 — Assurance expiring', desc:'Assurance expirant dans 3 jours. Renouvellement urgent.', time:'5 min ago' },
-    { type:'warning',  icon:'⚠️', title:'DEL-4818 Retardée — Route nationale 2', desc:'Livraison retardée suite à un incident près de Nador. Client informé.', time:'12 min ago' },
-    { type:'warning',  icon:'🔧', title:'TRK-015 Révision nécessaire', desc:'Entretien retardé de 1 200 km. Véhicule à l’arrêt.', time:'1 hr ago' },
-    { type:'info',     icon:'📍', title:'Nouvelle zone — TRK-071', desc:'Véhicule entré dans la zone géofencée de Tanger à 08:22.', time:'2 hrs ago' },
-    { type:'warning',  icon:'📋', title:'DRV-003 Permis bientôt expiré', desc:'Permis professionnel expirant dans 32 jours. Relance envoyée.', time:'3 hrs ago' },
+    { type:'critical', icon:'🚨', title:'TRK-088 — Assurance expirante', desc:'Assurance expirant dans 3 jours. Renouvellement urgent.', time:'il y a 5 min' },
+    { type:'warning',  icon:'⚠️', title:'DEL-4818 Retardée — Route nationale 2', desc:'Livraison retardée suite à un incident près de Nador. Client informé.', time:'il y a 12 min' },
+    { type:'warning',  icon:'🔧', title:'TRK-015 Révision nécessaire', desc:'Entretien retardé de 1 200 km. Véhicule à l’arrêt.', time:'il y a 1 h' },
+    { type:'info',     icon:'📍', title:'Nouvelle zone — TRK-071', desc:'Véhicule entré dans la zone géofencée de Tanger à 08:22.', time:'il y a 2 h' },
+    { type:'warning',  icon:'📋', title:'DRV-003 Permis bientôt expiré', desc:'Permis professionnel expirant dans 32 jours. Relance envoyée.', time:'il y a 3 h' },
   ],
 
   revenue: {
@@ -115,7 +115,20 @@ function getStatusBadge(status) {
     maintenance:'badge-critical',
     idle:      'badge-offline',
   };
-  return `<span class="badge ${map[status] || 'badge-offline'}">${status}</span>`;
+  const labelMap = {
+    online:    'En ligne',
+    driving:   'En route',
+    offline:   'Hors ligne',
+    transit:   'En transit',
+    delivered: 'Livré',
+    pending:   'En attente',
+    delayed:   'En retard',
+    cancelled: 'Annulé',
+    active:    'Actif',
+    maintenance:'Maintenance',
+    idle:      'Inactif',
+  };
+  return `<span class="badge ${map[status] || 'badge-offline'}">${labelMap[status] || status}</span>`;
 }
 
 function starsHTML(rating) {
@@ -196,7 +209,7 @@ function buildSidebar(activePage) {
         <div class="user-avatar">AD</div>
         <div class="user-info">
           <div class="user-name">Ahmed Draoui</div>
-          <div class="user-role">Fleet Administrator</div>
+          <div class="user-role">Administrateur de flotte</div>
         </div>
         <span style="color:var(--text-muted);font-size:12px;">⋮</span>
       </div>
@@ -213,9 +226,9 @@ function buildTopbar(title) {
   const currentItem = NAV_ITEMS.find(item => item.href === current) || NAV_ITEMS[0];
   const topMenu = [
     { label:'Dispatch', href:'dispatch.html' },
-    { label:'Deliveries', href:'deliveries.html' },
+    { label:'Livraisons', href:'deliveries.html' },
     { label:'Messages', href:'messages.html' },
-    { label:'Live Tracking', href:'tracking.html' }
+    { label:'Suivi en direct', href:'tracking.html' }
   ];
   const menuLinks = topMenu.map(item => `
       <a href="${item.href}" class="menu-link${item.href === current ? ' active' : ''}">${item.label}</a>
@@ -229,7 +242,7 @@ function buildTopbar(title) {
     </button>
     <div class="topbar-brand">
       <div class="topbar-title">${title}</div>
-      <div class="topbar-label">${currentItem.label} overview</div>
+      <div class="topbar-label">Aperçu — ${currentItem.label}</div>
     </div>
     <div class="topbar-menu">
       ${menuLinks}
@@ -239,12 +252,12 @@ function buildTopbar(title) {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
-        <input type="text" placeholder="Search or press ⌘K…" id="searchInput" readonly onclick="openCommandPalette()">
+        <input type="text" placeholder="Rechercher ou appuyer sur ⌘K…" id="searchInput" readonly onclick="openCommandPalette()">
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
-      <button class="icon-btn" onclick="showToast('info','Refresh','Data refreshed successfully')" title="Refresh">
+      <button class="theme-toggle" id="themeToggle" title="Changer de thème">🌙</button>
+      <button class="icon-btn" onclick="showToast('info','Actualiser','Données actualisées avec succès')" title="Actualiser">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
         </svg>
@@ -334,7 +347,7 @@ function buildCommandPalette() {
       <div class="command-input-wrap">
         <span style="font-size:16px;color:var(--text-muted)">🔍</span>
         <input class="command-input" id="cmdInput" placeholder="Rechercher pages, conducteurs, livraisons…">
-        <div class="command-kbds"><span class="kbd">ESC</span></div>
+        <div class="command-kbds"><span class="kbd">ÉCHAP</span></div>
       </div>
       <div class="command-results">
         <div class="command-section-label">Pages</div>
@@ -351,15 +364,15 @@ function buildCommandPalette() {
           <div class="command-result-icon">➕</div>
           <div class="command-result-text"><div class="command-result-title">Créer une livraison</div><div class="command-result-desc">Ouvrir le formulaire de livraison</div></div>
         </div>
-        <div class="command-result-item" onclick="showToast('info','Alert','Tableau de dispatch ouvert');closeCommandPalette()">
+        <div class="command-result-item" onclick="showToast('info','Alerte','Tableau de dispatch ouvert');closeCommandPalette()">
           <div class="command-result-icon">🗂️</div>
           <div class="command-result-text"><div class="command-result-title">Ouvrir le tableau de dispatch</div><div class="command-result-desc">Gérer les expéditions actives</div></div>
         </div>
       </div>
       <div class="command-footer">
-        <div class="command-hint"><span class="kbd">↵</span> Select</div>
-        <div class="command-hint"><span class="kbd">↑↓</span> Navigate</div>
-        <div class="command-hint"><span class="kbd">ESC</span> Close</div>
+        <div class="command-hint"><span class="kbd">↵</span> Sélectionner</div>
+        <div class="command-hint"><span class="kbd">↑↓</span> Naviguer</div>
+        <div class="command-hint"><span class="kbd">ÉCHAP</span> Fermer</div>
       </div>
     </div>
   `;

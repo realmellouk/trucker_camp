@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Deliveries — FleetCommand</title>
+<title>Livraisons — FleetCommand</title>
 <link rel="stylesheet" href="main.css">
 </head>
 <body>
@@ -16,12 +16,12 @@
 
       <div class="section-header mb-6">
         <div>
-          <div class="section-title" style="font-size:18px;">Deliveries</div>
-          <div class="section-subtitle">10 shipments · Jan 23–25, 2025</div>
+          <div class="section-title" style="font-size:18px;">Livraisons</div>
+          <div class="section-subtitle">10 expéditions · 23–25 janv. 2025</div>
         </div>
         <div style="display:flex;gap:10px;">
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Delivery report exported')">📤 Export</button>
-          <button class="btn btn-primary btn-sm" onclick="openNewDelivery()">➕ New Delivery</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Rapport de livraisons exporté')">📤 Exporter</button>
+          <button class="btn btn-primary btn-sm" onclick="openNewDelivery()">➕ Nouvelle livraison</button>
         </div>
       </div>
 
@@ -32,21 +32,21 @@
       <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
         <div class="search-bar" style="width:240px;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" placeholder="Search deliveries…" oninput="filterDeliveries(event)">
+          <input type="text" placeholder="Rechercher des livraisons…" oninput="filterDeliveries(event)">
         </div>
         <div class="filter-chips" id="deliveryFilters">
-          <div class="chip active" onclick="setDeliveryFilter('all',this)">All</div>
-          <div class="chip" onclick="setDeliveryFilter('transit',this)">In Transit</div>
-          <div class="chip" onclick="setDeliveryFilter('pending',this)">Pending</div>
-          <div class="chip" onclick="setDeliveryFilter('delivered',this)">Delivered</div>
-          <div class="chip" onclick="setDeliveryFilter('delayed',this)">Delayed</div>
-          <div class="chip" onclick="setDeliveryFilter('cancelled',this)">Cancelled</div>
+          <div class="chip active" onclick="setDeliveryFilter('all',this)">Tout</div>
+          <div class="chip" onclick="setDeliveryFilter('transit',this)">En transit</div>
+          <div class="chip" onclick="setDeliveryFilter('pending',this)">En attente</div>
+          <div class="chip" onclick="setDeliveryFilter('delivered',this)">Livré</div>
+          <div class="chip" onclick="setDeliveryFilter('delayed',this)">En retard</div>
+          <div class="chip" onclick="setDeliveryFilter('cancelled',this)">Annulé</div>
         </div>
         <select class="form-control form-select" style="height:36px;width:150px;">
-          <option>All Priority</option>
-          <option>High</option>
-          <option>Medium</option>
-          <option>Low</option>
+          <option>Toutes priorités</option>
+          <option>Haute</option>
+          <option>Moyenne</option>
+          <option>Basse</option>
         </select>
       </div>
 
@@ -54,9 +54,9 @@
       <div class="table-wrap">
         <table class="fc-table" id="deliveriesTable">
           <thead><tr>
-            <th>Delivery ID</th><th>Origin → Destination</th><th>Driver</th>
-            <th>Truck</th><th>Status</th><th>Priority</th>
-            <th>Weight</th><th>ETA</th><th>Revenue</th><th>Actions</th>
+            <th>ID Livraison</th><th>Origine → Destination</th><th>Conducteur</th>
+            <th>Camion</th><th>Statut</th><th>Priorité</th>
+            <th>Poids</th><th>ETA</th><th>Revenus</th><th>Actions</th>
           </tr></thead>
           <tbody id="deliveriesBody"></tbody>
         </table>
@@ -75,11 +75,11 @@ let deliveryFilter = 'all';
 let deliverySearch = '';
 
 const deliverySummaryStats = [
-  {label:'In Transit',   color:'var(--accent-cyan)',   filter:'transit'},
-  {label:'Pending',      color:'var(--accent-amber)',  filter:'pending'},
-  {label:'Delivered',    color:'var(--accent-green)',  filter:'delivered'},
-  {label:'Delayed',      color:'var(--accent-red)',    filter:'delayed'},
-  {label:'Cancelled',    color:'var(--text-muted)',    filter:'cancelled'},
+  {label:'En transit',   color:'var(--accent-cyan)',   filter:'transit'},
+  {label:'En attente',      color:'var(--accent-amber)',  filter:'pending'},
+  {label:'Livré',    color:'var(--accent-green)',  filter:'delivered'},
+  {label:'En retard',      color:'var(--accent-red)',    filter:'delayed'},
+  {label:'Annulé',    color:'var(--text-muted)',    filter:'cancelled'},
 ];
 
 function renderDeliverySummary() {
@@ -118,7 +118,8 @@ function filterDeliveries(e) {
 
 function getPriorityBadge(p) {
   const map = { high:'priority-high', medium:'priority-medium', low:'priority-low' };
-  return `<span class="dispatch-priority ${map[p]}">${p}</span>`;
+  const labelMap = { high:'Haute', medium:'Moyenne', low:'Basse' };
+  return `<span class="dispatch-priority ${map[p]}">${labelMap[p] || p}</span>`;
 }
 
 function renderDeliveries() {
@@ -128,7 +129,7 @@ function renderDeliveries() {
     return matchF && matchS;
   });
   const tbody = document.getElementById('deliveriesBody');
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-muted);">No deliveries found</td></tr>'; return; }
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-muted);">Aucune livraison trouvée</td></tr>'; return; }
   tbody.innerHTML = list.map(d => {
     const drv = d.driver ? getDriver(d.driver) : null;
     return `<tr onclick="openDeliveryDetail('${d.id}')">
@@ -141,7 +142,7 @@ function renderDeliveries() {
         </div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${d.cargo} · ${d.distance}</div>
       </td>
-      <td>${drv ? `<div style="display:flex;align-items:center;gap:8px;"><div class="driver-avatar" style="width:26px;height:26px;font-size:10px;background:${drv.color}20;color:${drv.color};">${drv.initials}</div>${drv.name}</div>` : '<span class="text-muted">Unassigned</span>'}</td>
+      <td>${drv ? `<div style="display:flex;align-items:center;gap:8px;"><div class="driver-avatar" style="width:26px;height:26px;font-size:10px;background:${drv.color}20;color:${drv.color};">${drv.initials}</div>${drv.name}</div>` : '<span class="text-muted">Non assigné</span>'}</td>
       <td class="font-mono">${d.truck || '—'}</td>
       <td>${getStatusBadge(d.status)}</td>
       <td>${getPriorityBadge(d.priority)}</td>
@@ -149,8 +150,8 @@ function renderDeliveries() {
       <td class="font-mono" style="${d.status==='delayed'?'color:var(--accent-red)':''}">${d.eta}</td>
       <td style="color:var(--accent-green);font-family:var(--font-mono);font-weight:700;">${d.revenue ? formatCurrency(d.revenue) : '—'}</td>
       <td class="td-actions" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-xs" onclick="openDeliveryDetail('${d.id}')">View</button>
-        ${d.status==='pending'?`<button class="btn btn-primary btn-xs" onclick="openAssignDriver('${d.id}')">Assign</button>`:''}
+        <button class="btn btn-ghost btn-xs" onclick="openDeliveryDetail('${d.id}')">Voir</button>
+        ${d.status==='pending'?`<button class="btn btn-primary btn-xs" onclick="openAssignDriver('${d.id}')">Assigner</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -164,11 +165,11 @@ function openDeliveryDetail(id) {
   const modal = document.getElementById('modalContent');
 
   const timelineSteps = [
-    { label:'Order Created',     time:'Jan 24, 07:00',  status:d.status !== 'cancelled' ? 'done' : 'done',    icon:'📋' },
-    { label:'Driver Assigned',   time:'Jan 24, 08:15',  status:drv ? 'done' : 'pending',                      icon:'👤' },
-    { label:'Pickup Complete',   time:'Jan 24, 09:30',  status:['transit','delivered','delayed'].includes(d.status) ? 'done' : 'pending', icon:'📦' },
-    { label:'In Transit',        time:d.eta !== '-' ? 'ETA: '+d.eta : 'Pending', status: d.status==='transit'||d.status==='delayed'?'current':d.status==='delivered'?'done':'pending', icon:'🚛' },
-    { label:'Delivered',         time:'—',              status:d.status==='delivered'?'done':'pending',        icon:'✅' },
+    { label:'Commande créée',     time:'24 janv., 07:00',  status:d.status !== 'cancelled' ? 'done' : 'done',    icon:'📋' },
+    { label:'Conducteur assigné',   time:'24 janv., 08:15',  status:drv ? 'done' : 'pending',                      icon:'👤' },
+    { label:'Chargement effectué',   time:'24 janv., 09:30',  status:['transit','delivered','delayed'].includes(d.status) ? 'done' : 'pending', icon:'📦' },
+    { label:'En transit',        time:d.eta !== '-' ? 'ETA : '+d.eta : 'En attente', status: d.status==='transit'||d.status==='delayed'?'current':d.status==='delivered'?'done':'pending', icon:'🚛' },
+    { label:'Livré',         time:'—',              status:d.status==='delivered'?'done':'pending',        icon:'✅' },
   ];
 
   modal.innerHTML = `
@@ -186,7 +187,7 @@ function openDeliveryDetail(id) {
     <div class="modal-body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
         <div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:16px;">
-          <div class="form-label">📍 Origin</div>
+          <div class="form-label">📍 Origine</div>
           <div style="font-size:14px;font-weight:600;margin-top:4px;">${d.origin}</div>
         </div>
         <div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:16px;">
@@ -195,14 +196,14 @@ function openDeliveryDetail(id) {
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-        <div><div class="form-label">Weight</div><div class="font-mono">${d.weight}</div></div>
-        <div><div class="form-label">Revenue</div><div class="font-mono" style="color:var(--accent-green);">${d.revenue ? formatCurrency(d.revenue) : '—'}</div></div>
+        <div><div class="form-label">Poids</div><div class="font-mono">${d.weight}</div></div>
+        <div><div class="form-label">Revenus</div><div class="font-mono" style="color:var(--accent-green);">${d.revenue ? formatCurrency(d.revenue) : '—'}</div></div>
         <div><div class="form-label">ETA</div><div class="font-mono" style="${d.status==='delayed'?'color:var(--accent-red)':''}">${d.eta}</div></div>
-        <div><div class="form-label">Driver</div><div>${drv ? drv.name : 'Unassigned'}</div></div>
-        <div><div class="form-label">Truck</div><div class="font-mono">${d.truck || '—'}</div></div>
+        <div><div class="form-label">Conducteur</div><div>${drv ? drv.name : 'Non assigné'}</div></div>
+        <div><div class="form-label">Camion</div><div class="font-mono">${d.truck || '—'}</div></div>
         <div><div class="form-label">Date</div><div class="font-mono">${d.date}</div></div>
       </div>
-      <div class="form-label" style="margin-bottom:12px;">📍 Delivery Timeline</div>
+      <div class="form-label" style="margin-bottom:12px;">📍 Suivi de livraison</div>
       <div class="timeline">
         ${timelineSteps.map(s=>`<div class="timeline-item">
           <div class="timeline-dot ${s.status}">${s.icon}</div>
@@ -214,9 +215,9 @@ function openDeliveryDetail(id) {
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-      ${d.status==='pending'?`<button class="btn btn-primary btn-sm" onclick="openAssignDriver('${id}');closeModal()">Assign Driver</button>`:''}
-      <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Delivery details exported');closeModal()">📤 Export POD</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Fermer</button>
+      ${d.status==='pending'?`<button class="btn btn-primary btn-sm" onclick="openAssignDriver('${id}');closeModal()">Assigner conducteur</button>`:''}
+      <button class="btn btn-ghost btn-sm" onclick="showToast('info','Export','Détails de livraison exportés');closeModal()">📤 Exporter BdL</button>
     </div>
   `;
   backdrop.classList.add('open');
@@ -228,33 +229,33 @@ function openAssignDriver(delId) {
   const modal = document.getElementById('modalContent');
   modal.innerHTML = `
     <div class="modal-header">
-      <div class="modal-title">Assign Driver — ${delId}</div>
+      <div class="modal-title">Assigner conducteur — ${delId}</div>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <div class="modal-body">
-      <p style="color:var(--text-secondary);margin-bottom:16px;font-size:13px;">Route: ${d?.origin} → ${d?.dest}</p>
+      <p style="color:var(--text-secondary);margin-bottom:16px;font-size:13px;">Itinéraire : ${d?.origin} → ${d?.dest}</p>
       <div class="form-group">
-        <label class="form-label">Select Driver</label>
+        <label class="form-label">Sélectionner le conducteur</label>
         <select class="form-control form-select">
-          <option>— Choose Driver —</option>
+          <option>— Choisir un conducteur —</option>
           ${FC.drivers.filter(d=>d.status!=='offline').map(d=>`<option>${d.name} (${d.id}) — ${d.status}</option>`).join('')}
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Assign Truck</label>
+        <label class="form-label">Assigner un camion</label>
         <select class="form-control form-select">
-          <option>— Choose Truck —</option>
+          <option>— Choisir un camion —</option>
           ${FC.trucks.filter(t=>t.status==='idle').map(t=>`<option>${t.id} — ${t.make} ${t.model}</option>`).join('')}
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Pickup Notes</label>
-        <textarea class="form-control" rows="2" placeholder="Special instructions…"></textarea>
+        <label class="form-label">Notes de chargement</label>
+        <textarea class="form-control" rows="2" placeholder="Instructions spéciales…"></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="showToast('success','Assigned','Driver assigned to ${delId}');closeModal()">Confirm Assignment</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="showToast('success','Assigné','Conducteur assigné à ${delId}');closeModal()">Confirmer l'affectation</button>
     </div>
   `;
   backdrop.classList.add('open');
@@ -265,31 +266,31 @@ function openNewDelivery() {
   const modal = document.getElementById('modalContent');
   modal.innerHTML = `
     <div class="modal-header">
-      <div class="modal-title">Create New Delivery</div>
+      <div class="modal-title">Créer une nouvelle livraison</div>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Origin City</label><input class="form-control" placeholder="Los Angeles, CA"></div>
-        <div class="form-group"><label class="form-label">Destination City</label><input class="form-control" placeholder="San Francisco, CA"></div>
+        <div class="form-group"><label class="form-label">Ville d'origine</label><input class="form-control" placeholder="Tanger"></div>
+        <div class="form-group"><label class="form-label">Ville de destination</label><input class="form-control" placeholder="Casablanca"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Cargo Type</label><input class="form-control" placeholder="Electronics, Perishables…"></div>
-        <div class="form-group"><label class="form-label">Weight (lbs)</label><input class="form-control" type="number" placeholder="24000"></div>
+        <div class="form-group"><label class="form-label">Type de cargaison</label><input class="form-control" placeholder="Électronique, périssables…"></div>
+        <div class="form-group"><label class="form-label">Poids (kg)</label><input class="form-control" type="number" placeholder="24000"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Priority</label>
-          <select class="form-control form-select"><option>Medium</option><option>High</option><option>Low</option></select>
+        <div class="form-group"><label class="form-label">Priorité</label>
+          <select class="form-control form-select"><option>Moyenne</option><option>Haute</option><option>Basse</option></select>
         </div>
-        <div class="form-group"><label class="form-label">Pickup Date</label><input class="form-control" type="date"></div>
+        <div class="form-group"><label class="form-label">Date de collecte</label><input class="form-control" type="date"></div>
       </div>
-      <div class="form-group"><label class="form-label">Special Instructions</label>
-        <textarea class="form-control" rows="2" placeholder="Temperature-controlled, fragile items…"></textarea>
+      <div class="form-group"><label class="form-label">Instructions spéciales</label>
+        <textarea class="form-control" rows="2" placeholder="Température contrôlée, articles fragiles…"></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="showToast('success','Created','Delivery DEL-4822 created');closeModal()">Create Delivery</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="showToast('success','Créée','Livraison DEL-4822 créée');closeModal()">Créer la livraison</button>
     </div>
   `;
   backdrop.classList.add('open');
@@ -298,7 +299,7 @@ function openNewDelivery() {
 function closeModal() { document.getElementById('modalBackdrop').classList.remove('open'); }
 document.getElementById('modalBackdrop').addEventListener('click', function(e) { if(e.target===this)closeModal(); });
 
-initApp('Deliveries <span class="topbar-subtitle">— Shipment Management</span>');
+initApp('Livraisons <span class="topbar-subtitle">— Gestion des expéditions</span>');
 renderDeliverySummary();
 renderDeliveries();
 </script>
